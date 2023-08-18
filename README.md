@@ -5,7 +5,21 @@ This repository will set up an API for Raspberry Shake Station and Earthquake Da
 Python 3.9
 
 ## Installation
-    pipenv install --dev # install dependencies
-    pipenv shell # run environment
-    pre-commit install # install pre-commit
+<details open>
+    <summary>Install pipenv</summary>
 
+        pip install --user pipenv
+</details>
+
+<details open>
+    <summary>Install dependencies and run `pipenv shell`</summary>
+    
+        pipenv install
+        pipenv shell
+</details>
+
+<details open>
+    <summary>Launch API</summary>
+
+        python manage.py runserver
+</details>
