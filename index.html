@@ -84,7 +84,7 @@
 			var startDate = new Date(new Date().setDate(endDate.getDate()-30))
 			var quakeUrl = `http://127.0.0.1:8000/api/quakes/?timestamp__range=${startDate.toJSON()},${endDate.toJSON()}`
 			
-			$.when($.getJSON(onlineUrl), $.getJSON(offlineUrl), $.getJSON(quakeUrl)).done(function(online, offline, quake){
+			$.when($.getJSON("online.json"), $.getJSON("offline.json"), $.getJSON("quake.json")).done(function(online, offline, quake){
 				// Marker for Online Stations
 				var onlineMarker = L.geoJson(online[0],{
 					pointToLayer: function(feature, latlng){
