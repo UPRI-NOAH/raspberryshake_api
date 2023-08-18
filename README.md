@@ -20,6 +20,9 @@ Python 3.9
 
 <details open>
     <summary>Launch API</summary>
-
+    
+        python manage.py migrate
         python manage.py runserver
 </details>
+
+## 
