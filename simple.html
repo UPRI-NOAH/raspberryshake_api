@@ -1,0 +1,130 @@
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		
+		<title>Trial Website</title>
+		<!-- leaflet css library -->
+		<link rel="stylesheet" href="leaflet/leaflet.css">
+		<!-- leaflet js library -->
+		<script src="leaflet/leaflet.js"></script>
+		<!-- ajax library for fetching json/geojson files-->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+
+		<!-- css for styling maps in html -->
+		<style>
+			/* size of html body */
+			html, body {
+				height: 100%;
+				margin: 0;
+			}
+			
+			/* map id */
+			#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+		</style>
+	</head>
+	<body>
+		<!-- initialize map -->
+		<!-- set the id of map and call it using css and js -->
+		<div id="map"></div>
+		<script>
+			// initialize map using js
+			// id of map
+			var map_options = {
+				zoomSnap: 0.1,
+			}
+			// map_options = {
+			// 	maxBounds: L.latLngBounds(L.latLng(2.767, 113.687), L.latLng(22.512, 131.089)),
+			// 	minZoom: 5,
+			// 	maxZoom: 10,
+			// }
+			var map = L.map('map', map_options).setView([12.629, 123.508], 6);
+			L.Control.textbox = L.Control.extend({
+				onAdd: function(map) {
+					
+				var text = L.DomUtil.create('div');
+				text.id = "info_text";
+				text.innerHTML = "<strong>text here</strong>"
+				return text;
+				}
+			});
+			L.control.textbox = function(opts) { return new L.Control.textbox(opts);}
+			L.control.textbox({ position: 'bottomleft' }).addTo(map);
+			// tile layer
+			var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+			}).addTo(map);
+			var baseMaps = {
+				"OpenStreetMap": osm,
+			}
+
+			var layerControl = L.control.layers(baseMaps, null, {position: 'bottomleft'}).addTo(map);
+			// icon of markers
+			var markerIcons = {
+				"online": L.icon({
+					iconUrl: "images/online.png",
+					iconSize: [20, 20]
+				}),
+			}
+			var onlineUrl = `http://127.0.0.1:8000/api/stations/?online=true`
+			
+            $.getJSON(onlineUrl,
+                function(data){			
+                    var quakeMarker = L.geoJson(quake[0],{
+                        pointToLayer: function(feature, latlng){
+                            return L.marker(latlng, {icon: L.icon({
+                                    iconUrl: "images/quake.png",
+                                    iconSize: [parseInt(5*feature.properties.mag), parseInt(5*feature.properties.mag)]
+                                })}
+                            );
+                        },
+                    }).addTo(map)
+                    quakeMarker.on('click', markerOnClick);
+                    layerControl.addOverlay(quakeMarker, `<img src="images/quake.png" style="width:20px;height:20px;">EARTHQUAKE`)
+                }
+            )
+
+			function markerOnClick(e){
+				// get properties of clicked marker
+				var prop = e.layer.feature.properties
+				var id = prop.pk.toUpperCase()
+				var code = `<h2>${id}</h2>`
+				// Station
+				if (id.length==5){
+					var elev = `<b>Elevation:</b> ${prop.elev}`
+					var online = `<b>Status:</b> ${prop.online ? "online" : "offline"}`
+					if(prop.online){
+						var acc = `<b>Acceleration:</b> ${parseFloat(prop.acc)} µm/s<sup>2</sup>`
+						var vel = `<b>Velocity:</b> ${parseFloat(prop.vel)} µm/s`
+						var disp = `<b>Displacement:</b> ${parseFloat(prop.disp)} µm`
+						var timestamp = `<b>Timestamp:</b> ${prop.timestamp}`
+						var output = `${code}${elev}</br>${online}</br><hr>${acc}</br>${vel}</br>${disp}</br>${timestamp}</br>`
+					}
+					else{
+						var output = `<hr>${code}${elev}</br>${online}</br><hr>`
+					}
+				}
+				// Quakes
+				else{
+					var depth = `<b>Depth:</b> ${parseFloat(prop.depth)}`
+					var mag = `<b>Magnitude:</b> ${parseFloat(prop.mag)}`
+					var agency = `<b>Agency:</b> ${prop.agency.toUpperCase()}`
+					var location = `<b>Location:</b> ${prop.location}`
+					var timestamp = `<b>Timestamp:</b> ${prop.timestamp}`
+					var output = `${code}${mag}</br>${depth}</br><hr>${agency}</br>${location}</br>${timestamp}</br>`
+				}
+				// create popup for marker
+				map.flyTo(e.latlng, 9, {
+						animate: true,
+						duration: 0.5
+				});
+				L.popup()
+				.setLatLng(e.latlng)
+				.setContent(`${output}`)
+				.openOn(map);
+			}
+			L.control.scale().addTo(map);
+		</script>
+	</body>
+</html>
